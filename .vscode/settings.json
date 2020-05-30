@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "/projects/anaconda3/bin/python",
+    "python.dataScience.jupyterServerURI": "local"
+}
