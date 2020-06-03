@@ -379,7 +379,12 @@ def parse_pa_mdj_docket(parser, verbose=False):
 
     # Sometimes there's more than one block within CASE INFORMATION.C
     # Construct a list of "landmarks", between which we'll find each block
-    case_info_landmarks = parser.find_all('Judge Assigned:') + [parser.find('CALENDAR EVENTS')]
+    
+    # For mature cases, the next section will be CALENDAR EVENTS.  
+    # However, for newly minted cases that don't yet have that section we need to fall back on 'CASE PARTICIPANTS'
+    judge_end_landmarks = parser.find_all('CALENDAR EVENTS')+parser.find_all('CASE PARTICIPANTS')
+    assert len(judge_end_landmarks)>0, 'Cannot find end landmark for Judge Assigned:'
+    case_info_landmarks = parser.find_all('Judge Assigned:') + judge_end_landmarks[0:1]
     case_infos = []
     for (top, bottom) in zip(case_info_landmarks[:-1], case_info_landmarks[1:]):
         case_infos.append(parse_case(parser.extract_box(parser.box(top_including=top, bottom_excluding=bottom))))
