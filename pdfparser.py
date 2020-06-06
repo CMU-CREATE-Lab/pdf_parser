@@ -455,6 +455,7 @@ def parse_pa_mdj_docket(parser, verbose=False):
         subparser = parser.extract_box(parser.box(top_excluding=parser.find('ATTORNEY INFORMATION'), bottom_excluding=parser.find('DOCKET ENTRY INFORMATION')))
         # Try to split into two columns, and extract text
         withdrawal = subparser.find_all(regex='^Withdrawal of Entry of Appearance Filed Dt:')
+        withdrawal = sorted(withdrawal, key=lambda s: s.x)
         assert(len(withdrawal) == 1 or len(withdrawal) == 2)
         text = subparser.extract_box(parser.box(right_excluding=withdrawal[-1])).extract_text_lines()
         if text:
