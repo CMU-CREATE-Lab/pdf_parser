@@ -1,7 +1,7 @@
 #%%
 
 import collections, glob, io, json, pdfminer, pdfminer.high_level, pprint, re
-from more_itertools import ichunked
+from more_itertools import chunked
 
 # Coordinate system:
 #
@@ -475,7 +475,7 @@ def parse_pa_mdj_docket(parser, verbose=False):
             info = {}
             groups = match.groups()
             info['Header'] = groups[0]
-            for k,v in ichunked(groups[1:], 2):
+            for k,v in chunked(groups[1:], 2):
                 v = v.strip()
                 # Preserve newlines only for Address
                 if k != 'Address':
