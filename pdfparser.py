@@ -404,7 +404,7 @@ def parse_pa_mdj_docket(parser, verbose=False):
 
     # Diposition Summary
     header = parser.find_sequence(['Docket Number', 'Plaintiff', 'Defendant', 'Disposition', 'Disposition Date'])
-    ret['Disposition Summary'] = parser.extract_table(header, until_gap=23, master_column=header[-1])
+    ret['Disposition Summary'] = parser.extract_table(header, until_gap=23, master_column=header[-1],end_regex='CIVIL DISPOSITION / JUDGMENT DETAILS')
 
     # Civil Disposition Details
     ret['Civil Disposition Details']['Grant possession.'] = parser.extract_after(parser.find('Grant possession.'))
