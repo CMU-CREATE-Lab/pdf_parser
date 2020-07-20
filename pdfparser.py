@@ -498,10 +498,9 @@ def parse_pa_mdj_docket(parser, verbose=False):
         header[0].text = 'Case Calendar Event Type'
         header[1].text = 'Schedule Start Date'
         header[5].text = 'Schedule Status'
-        ret['Calendar Events'] = parser.extract_table(header, until_gap=26, end_regex="CASE PARTICIPANTS", master_column=header[-1])
+        ret['Calendar Events'] = parser.extract_table(header, until_gap=60, end_regex="CASE PARTICIPANTS", master_column=header[-1])
 
     return dict(ret)
-
 
 #%%
 if False:
