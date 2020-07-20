@@ -1,6 +1,6 @@
 #%%
 
-import collections, glob, io, json, pdfminer, pdfminer.high_level, pprint, re
+import collections, glob, io, json, os, pdfminer, pdfminer.high_level, pprint, re
 from more_itertools import chunked
 
 # Coordinate system:
@@ -490,7 +490,18 @@ def parse_pa_mdj_docket(parser, verbose=False):
     header = parser.find_sequence(['Filed Date', 'Entry', 'Filer', 'Applies To'])
     ret['Docket Entry Info'] = parser.extract_table(header, until_gap=60, end_regex='MDJS 1200|Printed:', master_column=header[0])
 
+    # Calendar Events
+    if parser.find_all('CALENDAR EVENTS'):
+        header = parser.find_sequence(['Event Type', 'Start Date', 'Start Time', 'Room', 'Judge Name', 'Status'])
+        # Header is two lines;  edit the header span texts to add the first line, which wasn't matched
+        # This mutates the parse, so just be aware
+        header[0].text = 'Case Calendar Event Type'
+        header[1].text = 'Schedule Start Date'
+        header[5].text = 'Schedule Status'
+        ret['Calendar Events'] = parser.extract_table(header, until_gap=26, end_regex="CASE PARTICIPANTS", master_column=header[-1])
+
     return dict(ret)
+
 
 #%%
 if False:
@@ -498,4 +509,17 @@ if False:
         print(f'\n\n********************\n{src}')
         docket = parse_pa_mdj_docket(PdfParser(pdf_content = open(src, 'rb').read()))
         print(json.dumps(docket, indent=2))
+        if os.path.basename(src) == 'MDJReport-10.pdf':
+            assert(docket['Calendar Events'] == [
+                {
+                    'Case Calendar Event Type': 'Recovery of Real Property Hearing',
+                    'Schedule Start Date': '03/30/2020',
+                    'Start Time': '1:30 pm',
+                    'Judge Name': 'Magisterial District Judge Thomas Carney',
+                    'Schedule Status': 'Scheduled'
+                }
+            ])
+
+# %%
+
 
