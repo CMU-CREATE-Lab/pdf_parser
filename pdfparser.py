@@ -1,5 +1,6 @@
 #%%
 
+# pdfminer:  pip install pdfminer.six
 import collections, glob, io, json, os, pdfminer, pdfminer.high_level, pprint, re
 from more_itertools import chunked
 
@@ -12,7 +13,7 @@ from more_itertools import chunked
 #           y1: bottom
 #
 class PdfSpan:
-    def __init__(self, lt=None, parser=None, x1=None, y1=None, x2=None, y2=None):
+    def __init__(self, lt=None, parser=None, x1=None, y1=None, x2=None, y2=None, text=''):
         if lt and parser and x1 == None and y1 == None and x2 == None and y2 == None:
             self.parser = parser
             (self.x1, self.y1, self.x2, self.y2) = lt.bbox
@@ -23,7 +24,7 @@ class PdfSpan:
             self.y1 = y1
             self.x2 = x2
             self.y2 = y2
-            self.text = ''
+            self.text = text
         else:
             print(lt, parser, x1, y1, x2, y2)
             assert(False)
