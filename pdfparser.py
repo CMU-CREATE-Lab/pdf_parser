@@ -20,13 +20,14 @@ class PdfSpan:
             self.text = lt.get_text().strip()
         elif lt == None and parser == None and x1 != None and y1 != None and x2 != None and y2 != None:
             self.parser = None
+            assert(x1 <= x2)
+            assert(y1 <= y2)
             self.x1 = x1
             self.y1 = y1
             self.x2 = x2
             self.y2 = y2
             self.text = text
         else:
-            print(lt, parser, x1, y1, x2, y2)
             assert(False)
 
     def translate(self, dx, dy):
@@ -76,13 +77,21 @@ class PdfSpan:
         return self.centroid_within_horizontal_span(rhs) and self.centroid_within_vertical_span(rhs)
 
     def union(self, rhs):
-        return PdfSpan(x1=min(self.x1, rhs.x1),
+        return PdfSpan(text=self.text + ' ' + rhs.text,
+                       x1=min(self.x1, rhs.x1),
                        y1=min(self.y1, rhs.y1),
                        x2=max(self.x2, rhs.x2),
                        y2=max(self.y2, rhs.y2))
 
+    @staticmethod
+    def merge(spans):
+        ret = spans[0]
+        for span in spans[1:]:
+            ret = ret.union(span)
+        return ret
+
     def __repr__(self):
-        return f"<'{self.text}' x:{self.x:.1f}({self.x1:.1f}-{self.x2:.1f}) y:{self.y:.1f}({self.y1:.1f}-{self.y2:.1f})>"
+        return f"<'{self.text}' x:{self.x:.2f}({self.x1:.2f}-{self.x2:.2f}) y:{self.y:.2f}({self.y1:.2f}-{self.y2:.2f})>"
 
     def copy_to_parser(self, parser):
         ret = copy.copy(self)
@@ -146,6 +155,7 @@ class PdfParser:
             rows.append(sorted(row, key=lambda s:s.x))
         self.rows = rows
         self.spans = sum(rows, [])
+        
 
     def find_all(self, literal=None, regex=None):
         return [span for span in self.spans if span.matches(literal=literal, regex=regex)]
@@ -173,11 +183,15 @@ class PdfParser:
                 return ret
         raise Exception(f'Cant find sequence {literals}')
 
+    def find_sequence_as_span(self, literals):
+        seq = self.find_sequence(literals)
+        return PdfSpan.merge(seq)
+
     def next(self, span):
         assert(span)
         best = None
         for candidate in self.spans:
-            if span.overlaps_vertically(candidate) > 0 and span.x2 < candidate.x1:
+            if span.overlaps_vertically(candidate) > 0 and span.x < candidate.x:
                 if not best or candidate.x1 < best.x1:
                     best = candidate
         return best
